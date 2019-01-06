@@ -81,10 +81,7 @@ func (this *UserController)HenderlRegister()  {
 	//注册成功页面业务
 	this.Ctx.WriteString("注册成功请进入邮箱进行激活")
 }
-//显示登录页面
-func (this *UserController)ShowLogin()  {
-	this.TplName="login.html"
-}
+
 //激活操作
 func (this*UserController)ActvieUser()  {
 	userId,err:=this.GetInt("userId")
@@ -110,6 +107,69 @@ func (this*UserController)ActvieUser()  {
 	}
 	//激活成功后进入登录页面
 	this.Redirect("/login",302)
+
+}
+//显示登录页面
+func (this *UserController)ShowLogin()  {
+
+	UserName:=this.Ctx.GetCookie("UserName")
+	if UserName!="" {
+		this.Data["userName"]=UserName
+		this.Data["checked"]="checked"
+	}else {
+		this.Data["userName"]=""
+		this.Data["checked"]=""
+	}
+	this.TplName="login.html"
+}
+
+//登录业务处理
+
+func (this*UserController)HanderlLogin()  {
+	//获取数据
+	username:=this.GetString("username")
+	pwd:=this.GetString("pwd")
+	if username==""||pwd=="" {
+		beego.Error("用户名和密码输入不完整,请重新输入")
+		this.Redirect("/login",302)
+		return
+	}
+	//处理数据
+	o:=orm.NewOrm()
+	var users models.User
+	users.UserName=username
+	//查询
+	err:=o.Read(&users,"UserName")
+	if err!=nil {
+		beego.Error("用户名不存在,请重新输入")
+		this.Redirect("/login",302)
+		return
+	}
+	if users.Pwd!=pwd {
+		beego.Error("密码不正确,请重新输入")
+		this.Redirect("/login",302)
+		return
+	}
+	if users.Active==0 {
+		beego.Error("没有激活,请进入注册时的邮箱进行激活")
+		this.Redirect("/login",302)
+		return
+	}
+
+
+
+	//记住用户名操作
+
+	rember:=this.GetString("rember")
+	if rember=="on" {
+		this.Ctx.SetCookie("UserName",users.UserName,3600)
+	}else {
+		this.Ctx.SetCookie("UserName",users.UserName,-1)
+	}
+	//设置Session
+	this.SetSession("userName",username)
+	//跳转到首页
+	this.Redirect("/",302)
 
 }
 
