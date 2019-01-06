@@ -22,7 +22,7 @@ func init() {
     //个人中心内全部订单业务
     beego.Router("/goods/usercenterorder",&controllers.UserController{},"get:ShowUserCenterOrder")
 	//个人中心内收货地址的业务
-	beego.Router("/goods/usercentersite",&controllers.UserController{},"get:ShowUserCenterSite")
+	beego.Router("/goods/usercentersite",&controllers.UserController{},"get:ShowUserCenterSite;post:HenderlUserCenterSite")
 }
 
 func filterFunc(ctx*context.Context)  {

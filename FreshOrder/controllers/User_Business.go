@@ -207,9 +207,52 @@ func (this*UserController)ShowUserCenterSite()  {
 	//从session中获取用户名
 	userName:=this.GetSession("userName")
 	this.Data["userName"]=userName
-
 	//用于界面拼接
 	this.Layout="layout.html"
 	this.TplName="user_center_site.html"
 }
+//提交收货地址
+func (this*UserController)HenderlUserCenterSite()  {
+	//获取用户名
+	userName:=this.GetSession("userName")
+	//获取数据
+	recipientName:=this.GetString("recipientName")		//收件人
+	detailedAddress:=this.GetString("detailedAddress")		//详细地址
+	zipCode:=this.GetString("zipCode")		//邮编
+	mobilePhone:=this.GetString("mobilePhone")		//手机号
+	//校验数据
+	if userName==nil {
+		beego.Error("获取用户名失败")
+		return
+	}
+	if recipientName==""||detailedAddress==""||zipCode==""||mobilePhone=="" {
+		beego.Error("地址信息输入不完整,请重新输入")
+		this.TplName="user_center_site.html"
+		return
+	}
+	//处理数据
+	o:=orm.NewOrm()
+	//用户对象
+	var user models.User
+	user.UserName=userName.(string)
+	err:=o.Read(&user,"UserName")
+	if err!=nil {
+		beego.Error("读取数据失败")
+		return
+	}
+	//地址对象
+	var site models.Receiver
+	//赋值操作
+	site.Name=recipientName		//收件人
+	site.ZipCode=detailedAddress	//地址
+	site.Addre=zipCode				//邮编
+	site.Phone=mobilePhone			//手机号
+	site.User=&user
+	_,err=o.Insert(&site)
+	if err!=nil {
+		beego.Error("插入数据失败")
+		return
+	}
+	this.Redirect("/goods/usercenterinfo",302)
 
+}
