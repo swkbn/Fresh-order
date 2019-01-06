@@ -172,4 +172,44 @@ func (this*UserController)HanderlLogin()  {
 	this.Redirect("/",302)
 
 }
+//退出登录实现
+
+func (this*UserController)Logout()  {
+
+	this.DelSession("userName")
+	this.Redirect("/",302)
+
+}
+
+//显示用户中心
+
+func (this*UserController)ShowUsercenterinfo()  {
+	//从session中获取用户名
+	userName:=this.GetSession("userName")
+	this.Data["userName"]=userName
+	//拼接显示页面
+	this.Layout="layout.html"
+	this.TplName="user_center_info.html"
+
+}
+//显示用户中心页面的订单页
+func (this*UserController)ShowUserCenterOrder()  {
+
+	//从session中获取用户名
+	userName:=this.GetSession("userName")
+	this.Data["userName"]=userName
+	//用于界面拼接
+	this.Layout="layout.html"
+	this.TplName="user_center_order.html"
+}
+//显示用户中心内收货地址
+func (this*UserController)ShowUserCenterSite()  {
+	//从session中获取用户名
+	userName:=this.GetSession("userName")
+	this.Data["userName"]=userName
+
+	//用于界面拼接
+	this.Layout="layout.html"
+	this.TplName="user_center_site.html"
+}
 
