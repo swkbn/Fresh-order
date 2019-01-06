@@ -5,6 +5,9 @@ import (
 	"github.com/astaxie/beego/orm"
 	"fresh/Fresh-order/FreshOrder/models"
 	"regexp"
+	"strconv"
+
+	"github.com/astaxie/beego/utils"
 )
 
 type UserController struct {
@@ -65,10 +68,48 @@ func (this *UserController)HenderlRegister()  {
 		beego.Error("插入数据失败")
 		return
 	}
-	this.Redirect("/login",302)
+	//this.Redirect("/login",302)
+	//注册成功发送激活码
+	//注册成功的时候发送激活邮件
+	config := `{"username":"601232044@qq.com","password":"jxtcakchoapvbfii","host":"smtp.qq.com","port":587}`
+	emailSend := utils.NewEMail(config)
+	emailSend.From = "601232044@qq.com"
+	emailSend.To = []string{email}
+	emailSend.Subject = "天天生鲜用户激活"
+	emailSend.HTML = `<a href="http://192.168.189.11:8080/active?userId=`+strconv.Itoa(User.Id)+`">点击激活</a>`
+	emailSend.Send()
+	//注册成功页面业务
+	this.Ctx.WriteString("注册成功请进入邮箱进行激活")
 }
 //显示登录页面
 func (this *UserController)ShowLogin()  {
 	this.TplName="login.html"
+}
+//激活操作
+func (this*UserController)ActvieUser()  {
+	userId,err:=this.GetInt("userId")
+	if err!=nil {
+		beego.Error("获取数据失败")
+		return
+	}
+	o:=orm.NewOrm()
+	var user models.User
+	user.Id=userId
+	err=o.Read(&user)
+	if err!=nil {
+		beego.Error("用户名不存在")
+		this.Redirect("/register",302)
+		return
+	}
+
+	user.Active=1
+	_,err=o.Update(&user)
+	if err!=nil {
+		beego.Error("更新数据失败")
+		this.Redirect("/register",302)
+	}
+	//激活成功后进入登录页面
+	this.Redirect("/login",302)
+
 }
 
