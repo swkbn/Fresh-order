@@ -81,7 +81,6 @@ func (this *UserController)HenderlRegister()  {
 	//注册成功页面业务
 	this.Ctx.WriteString("注册成功请进入邮箱进行激活")
 }
-
 //激活操作
 func (this*UserController)ActvieUser()  {
 	userId,err:=this.GetInt("userId")
@@ -122,9 +121,7 @@ func (this *UserController)ShowLogin()  {
 	}
 	this.TplName="login.html"
 }
-
 //登录业务处理
-
 func (this*UserController)HanderlLogin()  {
 	//获取数据
 	username:=this.GetString("username")
@@ -173,20 +170,23 @@ func (this*UserController)HanderlLogin()  {
 
 }
 //退出登录实现
-
 func (this*UserController)Logout()  {
 
 	this.DelSession("userName")
 	this.Redirect("/",302)
 
 }
-
 //显示用户中心
-
 func (this*UserController)ShowUsercenterinfo()  {
 	//从session中获取用户名
 	userName:=this.GetSession("userName")
 	this.Data["userName"]=userName
+	//获取
+	var siet models.Receiver
+	o:=orm.NewOrm()
+	o.QueryTable("Receiver").RelatedSel("User").Filter("User__UserName",userName).One(&siet)
+	this.Data["siet"]=siet
+
 	//拼接显示页面
 	this.Layout="layout.html"
 	this.TplName="user_center_info.html"
@@ -207,9 +207,22 @@ func (this*UserController)ShowUserCenterSite()  {
 	//从session中获取用户名
 	userName:=this.GetSession("userName")
 	this.Data["userName"]=userName
+	//显示默认地址
+	var DefaultSite models.Receiver
+
+	o:=orm.NewOrm()
+	o.QueryTable("Receiver").RelatedSel("User").Filter("User__UserName",userName).Filter("IsDefault",true).One(&DefaultSite)
+	//把数据传输给前端
+	this.Data["DefaultSite"]=DefaultSite
+
+
+
 	//用于界面拼接
 	this.Layout="layout.html"
 	this.TplName="user_center_site.html"
+
+
+
 }
 //提交收货地址
 func (this*UserController)HenderlUserCenterSite()  {
@@ -240,6 +253,19 @@ func (this*UserController)HenderlUserCenterSite()  {
 		beego.Error("读取数据失败")
 		return
 	}
+
+	//判断是否有默认地址，如果有默认地址就把默认地址更改为非默认地址
+	var DefaultSite  models.Receiver
+	//查询当前用户的所有收件人地址
+	qs:=o.QueryTable("Receiver").RelatedSel("User").Filter("User__Id",user.Id)
+	//查询是否有默认地址
+	err=qs.Filter("IsDefault",true).One(&DefaultSite)
+	if err==nil {
+		//把默认地址更改为非默认地址
+		DefaultSite.IsDefault=false
+		o.Update(&DefaultSite)
+	}
+
 	//地址对象
 	var site models.Receiver
 	//赋值操作
@@ -247,6 +273,8 @@ func (this*UserController)HenderlUserCenterSite()  {
 	site.ZipCode=detailedAddress	//地址
 	site.Addre=zipCode				//邮编
 	site.Phone=mobilePhone			//手机号
+	site.IsDefault=true				//把新添加的地址更改为默认地址
+
 	site.User=&user
 	_,err=o.Insert(&site)
 	if err!=nil {
@@ -256,3 +284,8 @@ func (this*UserController)HenderlUserCenterSite()  {
 	this.Redirect("/goods/usercenterinfo",302)
 
 }
+
+
+
+
+
