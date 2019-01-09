@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/astaxie/beego/utils"
+	"github.com/gomodule/redigo/redis"
 )
 
 type UserController struct {
@@ -184,8 +185,32 @@ func (this*UserController)ShowUsercenterinfo()  {
 	//获取
 	var siet models.Receiver
 	o:=orm.NewOrm()
-	o.QueryTable("Receiver").RelatedSel("User").Filter("User__UserName",userName).One(&siet)
+	o.QueryTable("Receiver").RelatedSel("User").Filter("User__UserName",userName).Filter("IsDefault",true).One(&siet)
 	this.Data["siet"]=siet
+	//显示浏览记录
+	//从redis中获取数据
+	coon,err:=redis.Dial("tcp","192.168.189.11:6379")
+	if err!=nil {
+		beego.Error("连接redis错误")
+		return
+	}
+	defer coon.Close()
+	resp,err:=coon.Do("lrange","history_"+userName.(string),0,4)
+	 //回复助手汉书，对类型进行转换
+	 res,err:=redis.Ints(resp,err)
+	if err!=nil {
+		beego.Error("有问题")
+		return
+	}
+	var goods []models.GoodsSKU
+	for _,goodsId :=range res{
+		var goodsSku models.GoodsSKU
+		goodsSku.Id=goodsId
+		o.Read(&goodsSku)
+		goods=append(goods,goodsSku)
+	}
+	beego.Info(goods)
+	this.Data["goods"]=goods
 
 	//拼接显示页面
 	this.Layout="layout.html"

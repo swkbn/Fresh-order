@@ -23,6 +23,10 @@ func init() {
     beego.Router("/goods/usercenterorder",&controllers.UserController{},"get:ShowUserCenterOrder")
 	//个人中心内收货地址的业务
 	beego.Router("/goods/usercentersite",&controllers.UserController{},"get:ShowUserCenterSite;post:HenderlUserCenterSite")
+	//商品详情
+	beego.Router("/detail",&controllers.GoodesControllers{},"get:ShowDetail")
+	//商品分类页面
+	beego.Router("/list",&controllers.GoodesControllers{},"get:ShowList")
 }
 
 func filterFunc(ctx*context.Context)  {
