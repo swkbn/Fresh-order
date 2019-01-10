@@ -27,6 +27,12 @@ func init() {
 	beego.Router("/detail",&controllers.GoodesControllers{},"get:ShowDetail")
 	//商品分类页面
 	beego.Router("/list",&controllers.GoodesControllers{},"get:ShowList")
+	//搜索
+	beego.Router("/search",&controllers.GoodesControllers{},"post:HanderlSearch")
+
+
+	//加入购物车
+	beego.Router("/addCart",&controllers.CartControllers{},"post:HendelCart;get:ShowCart")
 }
 
 func filterFunc(ctx*context.Context)  {

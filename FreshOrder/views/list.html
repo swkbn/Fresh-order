@@ -10,35 +10,45 @@
 	<div class="header_con">
 		<div class="header">
 			<div class="welcome fl">欢迎来到天天生鲜!</div>
-			<div class="fr">
-				<div class="login_info fl">
-					欢迎您：<em>张 山</em>
-				</div>
-				<div class="login_btn fl">
-					<a href="login.html">登录</a>
-					<span>|</span>
-					<a href="register.html">注册</a>
-				</div>
-				<div class="user_link fl">
-					<span>|</span>
-					<a href="user_center_info.html">用户中心</a>
-					<span>|</span>
-					<a href="cart.html">我的购物车</a>
-					<span>|</span>
-					<a href="user_center_order.html">我的订单</a>
-				</div>
-			</div>
-		</div>		
+            <div class="fr">
+			{{if compare .userName ""}}
+                <div class="login_btn fl">
+                    <a href="login.html">登录</a>
+                    <span>|</span>
+                    <a href="register.html">注册</a>
+                </div>
+			{{else}}
+                <div class="user_link fl">
+                    <span>|</span>
+                    <a href="/goods/usercenterinfo">用户中心</a>
+                    <span>|</span>
+                    <a href="/addCart">我的购物车</a>
+                    <span>|</span>
+                    <a href="goods/usercenterorder">我的订单</a>
+                </div>
+			{{end}}
+                <div class="user_link fl">
+                    <span>|</span>
+                    <a href="/goods/usercenterinfo">用户中心</a>
+                    <span>|</span>
+                    <a href="/addCart">我的购物车</a>
+                    <span>|</span>
+                    <a href="goods/usercenterorder">我的订单</a>
+                </div>
+            </div>
+		</div>
 	</div>
 
 	<div class="search_bar clearfix">
-		<a href="index.html" class="logo fl"><img src="../static/images/logo.png"></a>
-		<div class="search_con fl">
-			<input type="text" class="input_text fl" name="" placeholder="搜索商品">
-			<input type="button" class="input_btn fr" name="" value="搜索">
-		</div>
+		<a href="/" class="logo fl"><img src="../static/images/logo.png"></a>
+        <div class="search_con fl">
+            <form action="/search" method="post">
+                <input type="text" class="input_text fl" name="searchName" placeholder="搜索商品">
+                <input type="submit" class="input_btn fr" name="" value="搜索">
+            </form>
+        </div>
 		<div class="guest_cart fr">
-			<a href="#" class="cart_name fl">我的购物车</a>
+			<a href="/addCart" class="cart_name fl">我的购物车</a>
 			<div class="goods_count fl">1</div>
 		</div>
 	</div>
@@ -46,19 +56,17 @@
 	<div class="navbar_con">
 		<div class="navbar clearfix">
 			<div class="subnav_con fl">
-				<h1>全部商品分类</h1>	
-				<span></span>			
+				<h1>全部商品分类</h1>
+				<span></span>
 				<ul class="subnav">
-					<li><a href="#" class="fruit">新鲜水果</a></li>
-					<li><a href="#" class="seafood">海鲜水产</a></li>
-					<li><a href="#" class="meet">猪牛羊肉</a></li>
-					<li><a href="#" class="egg">禽类蛋品</a></li>
-					<li><a href="#" class="vegetables">新鲜蔬菜</a></li>
-					<li><a href="#" class="ice">速冻食品</a></li>
+				{{range .goodesTypes}}
+                    <li><a href="/list?typeId={{.Id}}" class="{{.Logo}}">{{.Name}}</a></li>
+				{{end}}
+
 				</ul>
 			</div>
 			<ul class="navlist fl">
-				<li><a href="">首页</a></li>
+				<li><a href="/">首页</a></li>
 				<li class="interval">|</li>
 				<li><a href="">手机生鲜</a></li>
 				<li class="interval">|</li>
@@ -70,7 +78,7 @@
 	<div class="breadcrumb">
 		<a href="#">全部分类</a>
 		<span>></span>
-		<a href="#">新鲜水果</a>
+		<a href="#">{{.GoodsType.Name}}</a>
 	</div>
 
 	<div class="main_wrap clearfix">
@@ -78,32 +86,29 @@
 			<div class="new_goods">
 				<h3>新品推荐</h3>
 				<ul>
+					{{range .newGoods}}
 					<li>
-						<a href="#"><img src="../static/images/goods/goods001.jpg"></a>
-						<h4><a href="#">进口柠檬</a></h4>
-						<div class="prize">￥3.90</div>
+						<a href="/detail?goodsId={{.Id}}"><img src="http://192.168.189.11:8888/{{.Image}}"></a>
+						<h4><a href="/detail?goodsId={{.Id}}">{{.Name}}</a></h4>
+						<div class="prize">￥{{.Price}}</div>
 					</li>
-					<li>
-						<a href="#"><img src="../static/images/goods/goods002.jpg"></a>
-						<h4><a href="#">玫瑰香葡萄</a></h4>
-						<div class="prize">￥16.80</div>
-					</li>
+							{{end}}
 				</ul>
 			</div>
 		</div>
 
 		<div class="r_wrap fr clearfix">
 			<div class="sort_bar">
-				<a href="#" class="active">默认</a>
-				<a href="#">价格</a>
-				<a href="#">人气</a>
+				<a href="/list?typeId={{.typeId}}"{{if compare .sort ""}} class="active" {{end}}>默认</a>
+				<a href="/list?typeId={{.typeId}}&sort=price"{{if compare .sort "price"}} class="active"{{end}}>价格</a>
+				<a href="/list?typeId={{.typeId}}&sort=sale"{{if compare .sort "sale"}} class="active" {{end}}>人气</a>
 			</div>
 
 			<ul class="goods_type_list clearfix">
 				{{range .goods}}
 					<li>
-					<a href="detail.html"><img src="http://192.168.189.11:8888/{{.Image}}"></a>
-					<h4><a href="detail.html">{{.Name}}</a></h4>
+					<a href="/detail?goodsId={{.Id}}"><img src="http://192.168.189.11:8888/{{.Image}}"></a>
+					<h4><a href="/detail?goodsId={{.Id}}">{{.Name}}</a></h4>
 					<div class="operate">
 						<span class="prize">￥{{.Price}}</span>
 						<span class="unit">{{.Price}}/{{.Unite}}</span>
@@ -117,13 +122,11 @@
 			</ul>
 
 			<div class="pagenation">
-				<a href="#">上一页</a>
-				<a href="#" class="active">1</a>
-				<a href="#">2</a>
-				<a href="#">3</a>
-				<a href="#">4</a>
-				<a href="#">5</a>
-				<a href="#">下一页></a>
+				<a href="/list?pageIndex={{.preIndex}}&typeId={{.typeId}}&sort={{.sort}}">上一页</a>
+				{{range $key,$value:=.pages}}
+				<a href="/list?pageIndex={{$value}}&typeId={{$.typeId}}&sort={{$.sort}}" {{if compare $.pageIndex $value}} class="active" {{end}}>{{$value}}</a>
+				{{end}}
+				<a href="/list?pageIndex={{.nextIndex}}&typeId={{.typeId}}&sort={{.sort}}">下一页></a>
 			</div>
 		</div>
 	</div>
