@@ -18,13 +18,9 @@
                     <a href="register.html">注册</a>
                 </div>
 			{{else}}
-                <div class="user_link fl">
-                    <span>|</span>
-                    <a href="/goods/usercenterinfo">用户中心</a>
-                    <span>|</span>
-                    <a href="/addCart">我的购物车</a>
-                    <span>|</span>
-                    <a href="goods/usercenterorder">我的订单</a>
+                <div class="login_btn fl">
+                    欢迎您：<em>{{.userName}}</em>
+                    <a href="/logout">退出登录</a>
                 </div>
 			{{end}}
                 <div class="user_link fl">

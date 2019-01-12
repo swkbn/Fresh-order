@@ -59,7 +59,7 @@ func (this*CartControllers)ShowCart()  {
 	userName:=this.GetSession("userName")
 	if userName==nil {
 		beego.Error("用户未登录")
-		this.Redirect("/",302)
+		this.Redirect("/login",302)
 		return
 	}
 	//连接redis
@@ -115,7 +115,85 @@ func (this*CartControllers)ShowCart()  {
 	this.TplName="cart.html"
 
 }
+//购物车内数量的处理
+func (this*CartControllers)UpdateCart()  {
+	//获取数据
+	goodsId,err1:=this.GetInt("goodsId")
+	count,err2:=this.GetInt("count")
+	userName:=this.GetSession("userName")
+	//定义一个返回json的容器
+	resp:=make(map[string]interface{})
+	//校验数据
+	if err1!=nil||err2!=nil {
+		resp["errson"]=1
+		resp["errmsg"]="请求格式不正确"
+		this.Data["json"]=resp
+		this.ServeJSON()
+		return
+	}
+	if userName==nil {
+		resp["errson"]=2
+		resp["errmsg"]="用户未登录"
+		this.Data["json"]=resp
+		this.ServeJSON()
+		return
+	}
+	//处理数据
+	//连接redis
+	coon,err:=redis.Dial("tcp","192.168.189.11:6379")
+	if err!=nil {
+		resp["errson"]=3
+		resp["errmsg"]="连接redis失败"
+		this.Data["json"]=resp
+		this.ServeJSON()
+		return
+	}
+	defer coon.Close()
+	//更新数据
+	coon.Do("hset","cart_"+userName.(string),goodsId,count)
+	//返回数据
+	resp["errson"]=5
+	resp["errmsg"]="OK"
+	this.Data["json"]=resp
+	this.ServeJSON()
+	return
 
-//搜索
+}
 
+//处理错误函数
+func errFunc(this*CartControllers,resp map[string]interface{} )  {
+	this.Data["json"]=resp
+	this.ServeJSON()
+}
 
+//购物车内商品的删除
+func (this*CartControllers)DeleteCart()  {
+	//获取数据
+	goodsId,err:=this.GetInt("goodsId")
+	resp:=make(map[string]interface{})
+	defer errFunc(this,resp)
+	if err!=nil {
+		resp["errno"]=1
+		resp["errmsg"]="获取数据失败"
+		return
+	}
+	userName:=this.GetSession("userName")
+	if userName==nil {
+		resp["errno"]=2
+		resp["errmsg"]="用户未登录"
+		return
+	}
+	//连接redis
+	coon,err:=redis.Dial("tcp","192.168.189.11:6379")
+
+	if err!=nil {
+		resp["errno"]=3
+		resp["errmsg"]="连接redis失败"
+		return
+	}
+	defer coon.Close()
+	//删除redis中的数据
+	coon.Do("hdel","cart_"+userName.(string),goodsId)
+	resp["errno"]=5
+	resp["errmsg"]="OK"
+}
