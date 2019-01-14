@@ -127,15 +127,23 @@ func (this*GoodesControllers)ShowDetail()  {
 		//插入数据
 		coon.Do("lpush","history_"+userName.(string),goodId)
 	}
+
+	if userName==nil {
+		this.Data["userName"]=""
+	}else {
+		//userName是接口类型 需要断言
+		this.Data["userName"]=userName.(string)
+	}
+
 	this.TplName="detail.html"
-	this.Data["userName"]=userName
+
 }
 
 //类型详情页面
 func (this*GoodesControllers)ShowList()  {
 	//从session中获取用户名
 	userName:=this.GetSession("userName")
-	this.Data["userName"]=userName
+
 	//获取数据
 	typeId,err:=this.GetInt("typeId")
 	//校验数据
@@ -229,6 +237,13 @@ func (this*GoodesControllers)ShowList()  {
   	o.Read(&goodsTypeser)
 	this.Data["GoodsType"]=goodsTypeser
 	this.Data["typeId"]=typeId
+
+	if userName==nil {
+		this.Data["userName"]=""
+	}else {
+		//userName是接口类型 需要断言
+		this.Data["userName"]=userName.(string)
+	}
 	//显示页面
 	this.TplName="list.html"
 }
@@ -274,7 +289,12 @@ func pageEditor(pageCount int,pageIndex int) []int {
 func (this*GoodesControllers)HanderlSearch()  {
 	//从session中获取用户名
 	userName:=this.GetSession("userName")
-	this.Data["userName"]=userName
+	if userName==nil {
+		this.Data["userName"]=""
+	}else {
+		//userName是接口类型 需要断言
+		this.Data["userName"]=userName.(string)
+	}
 	//获取数据
 	searchName:=this.GetString("searchName")
 

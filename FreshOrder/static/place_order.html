@@ -133,18 +133,43 @@
 	<script type="text/javascript" src="js/jquery-1.12.2.js"></script>
 	<script type="text/javascript">
 		$('#order_btn').click(function() {
-			localStorage.setItem('order_finish',2);
 
-			$('.popup_con').fadeIn('fast', function() {
+            //获取数据并传递给后台
+            addrId = $("input[name=addr]:checked").val()
 
-				setTimeout(function(){
-					$('.popup_con').fadeOut('fast',function(){
-						window.location.href = 'index.html';
-					});	
-				},3000)
-				
-			});
-		});
+            payId = $("input[name=pay_style]:checked").val()
+
+            goodsIds = $(this).attr("goodsIds")
+
+            totalCount = $(".total_goods_count").children("em").text()
+
+            totalPrice = parseInt($(".total_goods_count").children("b").text())
+
+            transPrice = parseInt($(".transit").children("b").text())
+
+
+            totalPay = $(".total_pay").children("b").text()
+
+            //拼接param
+            param = {"addrId":addrId,"payId":payId,"goodsIds":goodsIds,"totalCount":totalCount,"totalPrice":totalPrice,"transPrice":transPrice,"totalPay":totalPay}
+            $.post("/addOrder",param,function (data) {
+                if(data.errno != 5){
+                    alert(data.errmsg)
+                }else{
+                    localStorage.setItem('order_finish',2);
+
+                    $('.popup_con').fadeIn('fast', function() {
+
+                        setTimeout(function(){
+                            $('.popup_con').fadeOut('fast',function(){
+                                window.location.href = '/goods/userCenterOrder';
+                            });
+                        },3000)
+
+                    });
+                }
+            })
+        });
 	</script>
 </body>
 </html>

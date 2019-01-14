@@ -16,6 +16,7 @@ type User struct {
 	Power    int         `orm:"default(0)"` //权限
 	Active   int         `orm:"default(0)"` //激活状态
 	Receiver []*Receiver `orm:"reverse(many)"`
+	OrderInfo []*OrderInfo `orm:"reverse(many)"`
 }
 
 type Receiver struct {
@@ -27,6 +28,7 @@ type Receiver struct {
 	IsDefault bool `orm:"default(false)"`
 	//关联
 	User *User `orm:"rel(fk)"`
+	OrderInfo []*OrderInfo `orm:"reverse(many)"`
 }
 
 //商品表
@@ -66,7 +68,8 @@ type GoodsSKU struct {
 	GoodsImage           []*GoodsImage           `orm:"reverse(many)"`
 	IndexGoodsBanner     []*IndexGoodsBanner     `orm:"reverse(many)"`
 	IndexTypeGoodsBanner []*IndexTypeGoodsBanner `orm:"reverse(many)"`
-	//OrderGoods   []*OrderGoods `orm:"reverse(many)"`
+	OrderGoods   []*OrderGoods `orm:"reverse(many)"`
+
 }
 
 type GoodsImage struct {
@@ -100,10 +103,33 @@ type IndexPromotionBanner struct {
 	Image string                    //活动图片
 	Index int    `orm:"default(0)"` //展示顺序
 }
+type OrderInfo struct {//订单表
+	Id 				int
+	OrderId         string  `orm:"unique"`
+	User 			*User	`orm:"rel(fk)"`		//用户
+	Receiver 		*Receiver`orm:"rel(fk)"`		//地址
+	PayMethod 		int							//付款方式
+	TotalCount 	int		`orm:"default(1)"`	//商品数量
+	TotalPrice 	int							//商品总价
+	TransitPrice 	int							//运费
+	Orderstatus 	int 	`orm:"default(1)"`	//订单状态
+	TradeNo 		string	`orm:"default('')"`	//支付编号
+	Time			time.Time `orm:"auto_now_add"`		//评论时间
 
+	OrderGoods   []*OrderGoods `orm:"reverse(many)"`
+}
+
+type OrderGoods struct {//订单商品表
+	Id 			int
+	OrderInfo 	*OrderInfo	`orm:"rel(fk)"`	//订单
+	GoodsSKU 	*GoodsSKU	`orm:"rel(fk)"`	//商品
+	Count 		int		`orm:"default(1)"`	//商品数量
+	Price 		int							//商品价格
+	Comment 	string	`orm:"default('')"` //评论
+}
 func init() {
 	orm.RegisterDataBase("default", "mysql", "root:123456@tcp(127.0.0.1:3306)/dailyfresh?charset=utf8")
-	orm.RegisterModel(new(User), new(Receiver),new(Goods),new(GoodsType),new(GoodsSKU),new(GoodsImage),new(IndexGoodsBanner),new(IndexTypeGoodsBanner),new(IndexPromotionBanner))
+	orm.RegisterModel(new(User),new(OrderInfo),new(OrderGoods), new(Receiver),new(Goods),new(GoodsType),new(GoodsSKU),new(GoodsImage),new(IndexGoodsBanner),new(IndexTypeGoodsBanner),new(IndexPromotionBanner))
 
 	orm.RunSyncdb("default", false, true)
 

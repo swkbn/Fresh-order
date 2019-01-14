@@ -13,9 +13,9 @@
             <div class="fr">
 			{{if compare .userName ""}}
                 <div class="login_btn fl">
-                    <a href="login.html">登录</a>
+                    <a href="/login">登录</a>
                     <span>|</span>
-                    <a href="register.html">注册</a>
+                    <a href="/register">注册</a>
                 </div>
 			{{else}}
                 <div class="login_btn fl">
@@ -52,7 +52,7 @@
 		<dl>
 			<dt>寄送到：</dt>
             {{range .rece}}
-			<dd><input type="radio" name="rece" {{if compare .IsDefault true}} checked="checked" {{end}}>{{.ZipCode}} （{{.Name}} 收） {{.Phone}}</dd>
+			<dd><input type="radio" name="addr" class="addr" value="{{.Id}}" {{if compare .IsDefault true}} checked="checked" {{end}}>{{.ZipCode}} （{{.Name}} 收） {{.Phone}}</dd>
             {{end}}
 		</dl>
 		<a href="user_center_site.html" class="edit_site">编辑收货地址</a>
@@ -62,13 +62,13 @@
 	<h3 class="common_title">支付方式</h3>	
 	<div class="common_list_con clearfix">
 		<div class="pay_style_con clearfix">
-			<input type="radio" name="pay_style" checked>
+			<input type="radio" name="pay_style" checked class="pay" value="1">
 			<label class="cash">货到付款</label>
-			<input type="radio" name="pay_style">
+			<input type="radio" name="pay_style" class="pay" value="2">
 			<label class="weixin">微信支付</label>
-			<input type="radio" name="pay_style">
+			<input type="radio" name="pay_style" class="pay" value="3">
 			<label class="zhifubao"></label>
-			<input type="radio" name="pay_style">
+			<input type="radio" name="pay_style" class="pay" value="4">
 			<label class="bank">银行卡支付</label>
 		</div>
 	</div>
@@ -107,7 +107,7 @@
 	</div>
 
 	<div class="order_submit clearfix">
-		<a href="javascript:;" id="order_btn">提交订单</a>
+		<a href="javascript:;" id="order_btn" goodsIds="{{.goodsIds}}">提交订单</a>
 	</div>	
 
 	<div class="footer">
@@ -116,7 +116,7 @@
 			<span>|</span>
 			<a href="#">联系我们</a>
 			<span>|</span>
-			<a href="#">招聘人才</a>
+			<a href="/payDX">招聘人才</a>
 			<span>|</span>
 			<a href="#">友情链接</a>		
 		</div>
@@ -131,21 +131,45 @@
 		
 		<div class="mask"></div>
 	</div>
-	<script type="text/javascript" src="js/jquery-1.12.2.js"></script>
+	<script type="text/javascript" src="/static/js/jquery-1.12.4.min.js"></script>
 	<script type="text/javascript">
 		$('#order_btn').click(function() {
-			localStorage.setItem('order_finish',2);
+            //获取数据并传递给后台
+            addrId = $("input[name=addr]:checked").val()
 
-			$('.popup_con').fadeIn('fast', function() {
+            payId = $("input[name=pay_style]:checked").val()
 
-				setTimeout(function(){
-					$('.popup_con').fadeOut('fast',function(){
-						window.location.href = 'index.html';
-					});	
-				},3000)
-				
-			});
-		});
+            goodsIds = $(this).attr("goodsIds")
+
+            totalCount = $(".total_goods_count").children("em").text()
+
+            totalPrice = parseInt($(".total_goods_count").children("b").text())
+
+            transPrice = parseInt($(".transit").children("b").text())
+
+
+            totalPay = $(".total_pay").children("b").text()
+
+            //拼接param
+            param = {"addrId":addrId,"payId":payId,"goodsIds":goodsIds,"totalCount":totalCount,"totalPrice":totalPrice,"transPrice":transPrice,"totalPay":totalPay}
+            $.post("/addOrder",param,function (data) {
+                if(data.errno != 5){
+                    alert(data.errmsg)
+                }else{
+                    localStorage.setItem('order_finish',2);
+
+                    $('.popup_con').fadeIn('fast', function() {
+
+                        setTimeout(function(){
+                            $('.popup_con').fadeOut('fast',function(){
+                                window.location.href = '/goods/usercenterorder';
+                            });
+                        },3000)
+
+                    });
+                }
+            })
+        });
 	</script>
 </body>
 </html>

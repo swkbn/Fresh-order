@@ -221,8 +221,36 @@ func (this*UserController)ShowUsercenterinfo()  {
 func (this*UserController)ShowUserCenterOrder()  {
 
 	//从session中获取用户名
-	userName:=this.GetSession("userName")
+	userName:=this.GetSession("userName").(string)
 	this.Data["userName"]=userName
+
+	var goods []map[string]interface{}
+	//获取订单数据
+	o := orm.NewOrm()
+	//获取当前用户的订单数据
+	var orderInfos []models.OrderInfo
+
+	o.QueryTable("OrderInfo").RelatedSel("User").Filter("User__UserName",userName).All(&orderInfos)
+
+	//获取订单商品数据
+	for _,v := range orderInfos{
+		temp := make(map[string]interface{})
+		//查询所有订单商品
+		var orderGoods []models.OrderGoods
+		o.QueryTable("OrderGoods").RelatedSel("OrderInfo","GoodsSKU").Filter("OrderInfo__Id",v.Id).All(&orderGoods)
+
+		//把数据塞进容器
+		temp["orderInfo"] = v
+		temp["orderGoods"] = orderGoods
+
+		goods = append(goods,temp)
+	}
+
+	this.Data["goods"] = goods
+
+
+
+
 	//用于界面拼接
 	this.Layout="layout.html"
 	this.TplName="user_center_order.html"

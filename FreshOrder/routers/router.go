@@ -39,6 +39,15 @@ func init() {
 	beego.Router("/deleteCart",&controllers.CartControllers{},"post:DeleteCart")
 	//结算订单
 	beego.Router("/goods/order",&controllers.OrderControllers{},"post:ShowOrder")
+	//提交订单业务
+	beego.Router("/addOrder",&controllers.OrderControllers{},"post:AddOrder")
+	//去支付
+	beego.Router("/aliPay",&controllers.OrderControllers{},"get:HendelPay")
+	//支付成功后跳转
+	beego.Router("/payOk",&controllers.OrderControllers{},"get:PayOK")
+	//发送短信
+	beego.Router("/payDX",&controllers.OrderControllers{},"get:SendMsg")
+
 }
 
 func filterFunc(ctx*context.Context)  {
